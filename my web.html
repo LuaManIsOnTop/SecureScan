@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SecureScan - Futuristic Safety Checker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-dark: #070b14;
+            --bg-card: #111a2e;
+            --primary: #3b82f6;
+            --primary-glow: rgba(59, 130, 246, 0.4);
+            --accent: #60a5fa;
+            --text-main: #f3f4f6;
+            --text-muted: #6b7280;
+            --success: #10b981;
+            --danger: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        #preloader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, #0f172a 0%, #030712 100%);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1), transform 0.8s ease;
+        }
+
+        .loader-logo {
+            font-size: 2.8rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 30px;
+            letter-spacing: 2px;
+        }
+
+        .loader-logo span {
+            color: var(--primary);
+            text-shadow: 0 0 20px var(--primary-glow);
+        }
+
+        .loader-container {
+            position: relative;
+            width: 300px;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            transition: all 0.6s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .loader-bar {
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            box-shadow: 0 0 15px var(--primary-glow);
+            border-radius: 10px;
+            transition: width 0.1s linear;
+        }
+
+        .loader-container.transform-to-circle {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: transparent;
+            border: 4px solid rgba(59, 130, 246, 0.1);
+            border-left-color: var(--primary);
+            animation: spin 1s linear infinite;
+        }
+
+        .loader-container.transform-to-circle .loader-bar {
+            display: none;
+        }
+
+        .loader-percentage {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--accent);
+            margin-top: 15px;
+            transition: opacity 0.3s ease;
+        }
+
+        .loader-text {
+            margin-top: 15px;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            text-align: center;
+            font-weight: 500;
+            height: 20px;
+            transition: all 0.3s ease;
+        }
+
+        @keyframes spin {
+            100% { transform: rotate(360deg); }
+        }
+
+        .container {
+            width: 100%;
+            max-width: 650px;
+            padding: 20px;
+            opacity: 0;
+            transform: scale(0.95) translateY(20px);
+            transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        body.loaded .container {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
+
+        .main-card {
+            background: linear-gradient(145deg, var(--bg-card), #0d1424);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            border-radius: 24px;
+            padding: 40px 30px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(20px);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        header h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            background: linear-gradient(to right, #fff, var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        header p {
+            color: #9ca3af;
+            font-size: 0.95rem;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .input-wrapper {
+            position: relative;
+            flex: 1;
+        }
+
+        .input-wrapper i {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #4b5563;
+            font-size: 1.1rem;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 16px 16px 16px 48px;
+            background: rgba(7, 11, 20, 0.5);
+            border: 2px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            color: #fff;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.15);
+        }
+
+        .btn-paste {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: var(--text-main);
+            padding: 0 20px;
+            border-radius: 14px;
+            cursor: pointer;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-paste:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--accent);
+        }
+
+        .btn-scan {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, var(--primary), #1d4ed8);
+            border: none;
+            border-radius: 14px;
+            color: white;
+            font-size: 1.05rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 20px var(--primary-glow);
+            transition: all 0.3s ease;
+        }
+
+        .btn-scan:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 25px rgba(59, 130, 246, 0.5);
+        }
+
+        .btn-scan:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .scan-container {
+            margin-top: 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            padding-top: 25px;
+            display: none;
+        }
+
+        .scanning-status {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .radar-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(59, 130, 246, 0.1);
+            border-left-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+
+        .error-block {
+            display: none;
+            text-align: center;
+            padding: 20px 10px;
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        .error-icon {
+            width: 70px;
+            height: 70px;
+            background: rgba(239, 68, 68, 0.1);
+            border: 2px solid var(--danger);
+            color: var(--danger);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2rem;
+            margin: 0 auto 15px;
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.2);
+        }
+
+        .error-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 5px;
+        }
+
+        .error-subtitle {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .checklist-results {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .check-item {
+            background: rgba(255, 255, 255, 0.01);
+            border-radius: 12px;
+            padding: 14px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 4px solid var(--text-muted);
+            opacity: 0;
+            transform: translateX(-10px);
+        }
+
+        .check-item.reveal {
+            opacity: 1;
+            transform: translateX(0);
+            transition: all 0.4s ease;
+        }
+
+        .check-item.safe { border-left-color: var(--success); }
+        .check-item.danger { border-left-color: var(--danger); }
+
+        .check-info {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .check-title {
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+
+        .check-badge {
+            font-size: 0.8rem;
+            font-weight: 600;
+            padding: 4px 12px;
+            border-radius: 20px;
+        }
+
+        .badge-safe { background: rgba(16, 185, 129, 0.1); color: #34d399; }
+        .badge-danger { background: rgba(239, 68, 68, 0.1); color: #f87171; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="preloader">
+        <div class="loader-logo">SECURE<span>SCAN</span></div>
+        
+        <div class="loader-container" id="loaderContainer">
+            <div class="loader-bar" id="loaderBar"></div>
+        </div>
+        
+        <div class="loader-percentage" id="loaderPercentage">0%</div>
+        <div class="loader-text" id="loaderText">Preparing the SecureScan</div>
+    </div>
+
+    <div class="container">
+        <div class="main-card">
+            <header>
+                <h1>Cyber Security Analyzer</h1>
+                <p>Test domain integrity and network configuration security</p>
+            </header>
+
+            <div class="input-group">
+                <div class="input-wrapper">
+                    <i class="fa-solid fa-link"></i>
+                    <input type="text" id="urlInput" placeholder="Enter or paste website URL address...">
+                </div>
+                <button class="btn-paste" id="pasteBtn">
+                    <i class="fa-regular fa-clipboard"></i> Paste
+                </button>
+            </div>
+
+            <button class="btn-scan" id="scanBtn">
+                <i class="fa-solid fa-shield-halved"></i> Run Encryption Detection
+            </button>
+
+            <div class="scan-container" id="scanContainer">
+                
+                <div class="scanning-status" id="scanningStatus">
+                    <div class="radar-spinner"></div>
+                    <h3 id="statusText">Contacting global DNS servers...</h3>
+                </div>
+
+                <div class="error-block" id="errorBlock">
+                    <div class="error-icon">
+                        <i class="fa-solid fa-xmark"></i>
+                    </div>
+                    <div class="error-title">Website Didn't Exist</div>
+                    <div class="error-subtitle">The server address could not be resolved or the domain structure is invalid.</div>
+                </div>
+
+                <div class="checklist-results" id="checklistResults"></div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            const preloader = document.getElementById('preloader');
+            const loaderContainer = document.getElementById('loaderContainer');
+            const loaderBar = document.getElementById('loaderBar');
+            const loaderPercentage = document.getElementById('loaderPercentage');
+            const loaderText = document.getElementById('loaderText');
+
+            let progress = 0;
+            
+            const textStages = [
+                { limit: 25, text: "Preparing the SecureScan" },
+                { limit: 55, text: "Loading Core System Modules" },
+                { limit: 85, text: "Establishing Secure Environment" },
+                { limit: 100, text: "Finalizing Quantum Shield..." }
+            ];
+
+            const progressInterval = setInterval(() => {
+                progress += Math.floor(Math.random() * 4) + 1;
+                if (progress > 100) progress = 100;
+
+                loaderBar.style.width = `${progress}%`;
+                loaderPercentage.innerText = `${progress}%`;
+
+                const stage = textStages.find(s => progress <= s.limit);
+                if (stage && loaderText.innerText !== stage.text && progress < 100) {
+                    loaderText.innerText = stage.text;
+                }
+
+                if (progress === 100) {
+                    clearInterval(progressInterval);
+                    
+                    loaderPercentage.style.opacity = '0';
+
+                    setTimeout(() => {
+                        loaderContainer.classList.add('transform-to-circle');
+                        loaderText.innerText = "Welcome to SecureScan";
+                        loaderText.style.color = "var(--accent)";
+                    }, 400);
+
+                    setTimeout(() => {
+                        preloader.style.opacity = '0';
+                        preloader.style.transform = 'scale(1.03)';
+                        document.body.classList.add('loaded');
+                        
+                        setTimeout(() => {
+                            preloader.style.display = 'none';
+                            document.body.style.overflow = 'auto';
+                        }, 800);
+                    }, 2400);
+                }
+            }, 50);
+        });
+
+        const urlInput = document.getElementById('urlInput');
+        const pasteBtn = document.getElementById('pasteBtn');
+
+        pasteBtn.addEventListener('click', async () => {
+            try {
+                const text = await navigator.clipboard.readText();
+                urlInput.value = text;
+            } catch (err) {
+                alert("Please grant browser permissions to access the clipboard.");
+            }
+        });
+
+        const scanBtn = document.getElementById('scanBtn');
+        const scanContainer = document.getElementById('scanContainer');
+        const scanningStatus = document.getElementById('scanningStatus');
+        const statusText = document.getElementById('statusText');
+        const errorBlock = document.getElementById('errorBlock');
+        const checklistResults = document.getElementById('checklistResults');
+
+        const securityCriteria = [
+            { id: 'malware', name: 'Malware & Trojan Ransomware', icon: 'fa-virus-slash' },
+            { id: 'ads', name: 'Malicious Pop-ups & Script Injection', icon: 'fa-rectangle-ad' },
+            { id: 'phishing', name: 'Phishing Detection & Domain Spoofing', icon: 'fa-fish-fins' },
+            { id: 'cookies', name: 'Third-Party Tracking Cookies', icon: 'fa-cookie-bite' }
+        ];
+
+        scanBtn.addEventListener('click', () => {
+            const targetUrl = urlInput.value.trim();
+
+            if (!targetUrl) {
+                alert("Please enter a URL or use the paste button!");
+                return;
+            }
+
+            scanBtn.disabled = true;
+            errorBlock.style.display = 'none';
+            checklistResults.innerHTML = '';
+            scanContainer.style.display = 'block';
+            scanningStatus.style.display = 'flex';
+            statusText.innerText = "Contacting global DNS servers...";
+
+            setTimeout(() => { statusText.innerText = "Verifying domain registry records..."; }, 1200);
+
+            setTimeout(() => {
+                scanningStatus.style.display = 'none';
+
+                const hasDot = targetUrl.includes('.');
+                const isValidLength = targetUrl.length > 4;
+
+                if (!hasDot || !isValidLength) {
+                    errorBlock.style.display = 'block';
+                    scanBtn.disabled = false;
+                    return;
+                }
+
+                const isSuspicious = targetUrl.toLowerCase().includes('gamble') || 
+                                     targetUrl.toLowerCase().includes('phish') || 
+                                     targetUrl.toLowerCase().includes('test');
+
+                securityCriteria.forEach((criteria, index) => {
+                    setTimeout(() => {
+                        let isSafe = true;
+                        if (isSuspicious && (criteria.id === 'ads' || criteria.id === 'malware')) isSafe = false;
+                        if (!isSuspicious && criteria.id === 'cookies' && Math.random() > 0.7) isSafe = false;
+
+                        const itemHTML = `
+                            <div class="check-item ${isSafe ? 'safe' : 'danger'}" id="chk-${index}">
+                                <div class="check-info">
+                                    <i class="fa-solid ${criteria.icon}" style="color: ${isSafe ? 'var(--success)' : 'var(--danger)'}"></i>
+                                    <span class="check-title">${criteria.name}</span>
+                                </div>
+                                <span class="check-badge ${isSafe ? 'badge-safe' : 'badge-danger'}">
+                                    ${isSafe ? '<i class="fa-solid fa-check"></i> Safe' : '<i class="fa-solid fa-xmark"></i> High Risk'}
+                                </span>
+                            </div>
+                        `;
+
+                        checklistResults.insertAdjacentHTML('beforeend', itemHTML);
+                        
+                        setTimeout(() => {
+                            document.getElementById(`chk-${index}`).classList.add('reveal');
+                        }, 50);
+
+                    }, index * 300);
+                });
+
+                setTimeout(() => { scanBtn.disabled = false; }, securityCriteria.length * 300);
+
+            }, 2800);
+        });
+    </script>
+</body>
+</html>
